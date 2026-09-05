@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-tap-highlight-color: transparent;
+
+    color-scheme: light;
+
+    /* Blog native background */
+    --page-bg: #fcfcfc;
+
+    @apply bg-[#fcfcfc];
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+
+      /* Blog native dark background */
+      --page-bg: #1C1C1C;
+
+      @apply bg-[#1C1C1C];
+    }
+  }
+
+  /*
+   * Make the document background use the same color as the root.
+   * This is especially useful for full-screen pages such as /about.
+   */
+  html,
+  body {
+    background-color: var(--page-bg);
+  }
+
+  /* Global text selection styles */
+  ::selection {
+    @apply bg-black text-white;
+  }
+
+  ::-moz-selection {
+    @apply bg-black text-white;
+  }
+
+  /* Dark mode selection styles */
+  @media (prefers-color-scheme: dark) {
+    ::selection {
+      @apply bg-white text-black;
+    }
+
+    ::-moz-selection {
+      @apply bg-white text-black;
+    }
+  }
+}
