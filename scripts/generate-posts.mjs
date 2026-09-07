@@ -8,7 +8,7 @@ const POSTS_DIR = "./posts";
 
 const GITHUB_OWNER = "shabi";
 const GITHUB_REPO = "blog";
-const GITHUB_BRANCH = "dynamic-id";
+const GITHUB_BRANCH = "master";
 
 
 async function getLastModifiedDate(filePath) {
@@ -268,8 +268,8 @@ const posts =
 
 posts.sort(
   (a, b) =>
-    new Date(b.date).getTime() -
-    new Date(a.date).getTime()
+    new Date(b.updatedAt).getTime() -
+    new Date(a.updatedAt).getTime()
 );
 
 

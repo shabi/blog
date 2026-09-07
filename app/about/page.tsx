@@ -10,7 +10,7 @@ export default function AboutPage() {
     <main className="relative min-h-[88dvh] md:min-h-[900px] w-full overflow-x-clip">
       <div
         className={`absolute left-1/2 top-[60px] md:top-[2px] -translate-x-1/2 transition-transform duration-[1200ms] ease-[cubic-bezier(.2,.7,.2,1)] ${
-          zoomed ? "scale-[2.2] md:scale-[1.8] translate-y-[10vh] md:translate-y-[calc(14vh+30px)]" : "scale-[1.1]"
+          zoomed ? "scale-[2.2] md:scale-[1.8] translate-y-[10vh] md:translate-y-[calc(14vh+30px)]" : "scale-[1.1] md:scale-[0.75]"
         }`}
       >
         <picture>
@@ -25,7 +25,12 @@ export default function AboutPage() {
             width={1105}
             height={1423}
             priority
-            className="block h-auto w-[360px]"
+            className="
+              block
+              h-auto
+              w-[360px]
+              animate-[avatarHint_3s_ease-in-out_1.5s_1]
+            "
           />
 
           <button
@@ -52,7 +57,7 @@ export default function AboutPage() {
       </div>
 
       <div
-        className={`absolute left-1/2 top-[400px] md:top-[670px] -translate-x-1/2 text-center transition-all duration-1000 ease-out ${
+        className={`absolute left-1/2 top-[400px] md:top-[730px] -translate-x-1/2 text-center transition-all duration-1000 ease-out ${
           zoomed
             ? "translate-y-0 opacity-100 delay-[1200ms]"
             : "translate-y-5 opacity-0 delay-0"

@@ -1,3 +1,5 @@
+import { SearchTarget } from "./components/search-target";
+
 export default function Layout({
   children,
 }: {
@@ -9,9 +11,9 @@ export default function Layout({
     <article
       className="
         mx-auto
-        max-w-[720px]
+        max-w-[800px]
 
-        px-4
+        px-2
         md:px-0
 
         text-gray-800
@@ -22,13 +24,17 @@ export default function Layout({
 
         mb-10
 
-        text-[18px]
+        text-[17px]
 
         leading-[1.75]
       "
     >
 
-      {children}
+      <div data-post-content>
+        {children}
+      </div>
+
+      <SearchTarget />
 
     </article>
 
