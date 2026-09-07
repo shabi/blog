@@ -10,7 +10,7 @@ export function ViewCounter({
 }) {
 
   const [views, setViews] =
-    useState(0);
+    useState<number | null>(null);
 
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export function ViewCounter({
     })
     .catch(() => {
 
-      setViews(0);
+      setViews(null);
 
     });
 
@@ -36,7 +36,7 @@ export function ViewCounter({
 
   return (
     <span>
-      {views}
+      {views ?? "..."}
     </span>
   );
 

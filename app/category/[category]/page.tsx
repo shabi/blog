@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { getPosts } from "@/app/get-posts";
 
 
@@ -10,12 +9,12 @@ const categoryNames = {
     en: "TECH",
   },
 
-  essays: {
+  essay: {
     zh: "随笔",
     en: "ESSAY",
   },
 
-  stories: {
+  story: {
     zh: "故事",
     en: "STORY",
   },
@@ -55,11 +54,6 @@ export default async function Page({
     .reverse();
 
 
-  if (filteredPosts.length === 0) {
-    notFound();
-  }
-
-
   const title =
     categoryNames[
       category as keyof typeof categoryNames
@@ -81,55 +75,104 @@ export default async function Page({
         className="
           mb-6
           text-sm
+          font-normal
           tracking-wide
           text-neutral-500
           dark:text-neutral-400
         "
       >
-        {title}
+        {lang === "zh" && title.length === 2 ? (
+          <span className="inline-flex gap-[0.5em]">
+            <span>{title[0]}</span>
+            <span>{title[1]}</span>
+          </span>
+        ) : (
+          title
+        )}
       </div>
 
 
       <ul>
 
-        {filteredPosts.map(post => (
+        {filteredPosts.map((post, index) => {
 
-          <li
-            key={post.id}
-            className="mb-4"
-          >
+          const year =
+            post.date.slice(0, 4);
 
-            <Link
-              href={`/${post.id}?from=category`}
-              className="
-                text-lg
-                font-semibold
+          const previousYear =
+            index > 0
+              ? filteredPosts[index - 1].date.slice(0, 4)
+              : null;
 
-                hover:bg-neutral-200
-                dark:hover:bg-neutral-700
+          const showYear =
+            year !== previousYear;
 
-                active:bg-neutral-300
-                dark:active:bg-neutral-600
 
-                transition-all
-                rounded-xl
-                py-0.5
-                px-1.5
-                uppercase
-                tracking-wide
-              "
-              style={{
-                wordSpacing: "0.10em",
-              }}
+          return (
+
+            <li
+              key={post.id}
+              className="mb-4"
             >
 
-              {post.title}
+              <Link
+                href={`/${post.id}?from=category`}
+                className="
+                  flex
+                  w-full
+                  items-center
+                  group/title
+                "
+              >
 
-            </Link>
+                <span
+                  className="
+                    w-12
+                    shrink-0
+                    text-xs
+                    font-mono
+                    text-neutral-500
+                    dark:text-neutral-400
+                  "
+                >
+                  {showYear ? year : ""}
+                </span>
 
-          </li>
 
-        ))}
+                <span
+                  className="
+                    rounded-xl
+                    py-0.5
+                    px-1.5
+                    text-2xl
+                    font-medium
+                    leading-snug
+                    uppercase
+                    tracking-wide
+                    dark:text-gray-100
+
+                    group-hover/title:bg-neutral-200
+                    dark:group-hover/title:bg-neutral-700
+
+                    group-active/title:bg-neutral-300
+                    dark:group-active/title:bg-neutral-600
+
+                    transition-all
+                  "
+                  style={{
+                    wordSpacing: "0.10em",
+                  }}
+                >
+                  {post.title}
+                </span>
+
+              </Link>
+
+            </li>
+
+          );
+
+        })}
 
       </ul>
 
