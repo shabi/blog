@@ -78,7 +78,7 @@ export async function PostNavigation({
         {previous && (
 
           <Link
-            href={`/${previous.id}?from=${from ?? "category"}`}
+            href={`/${previous.lang}/${previous.category}/${previous.id}?from=${from ?? "category"}`}
             className="
               inline-flex
               items-center
@@ -123,7 +123,7 @@ export async function PostNavigation({
         {next && (
 
           <Link
-            href={`/${next.id}?from=${from ?? "category"}`}
+            href={`/${next.lang}/${next.category}/${next.id}?from=${from ?? "category"}`}
             className="
               inline-flex
               items-center

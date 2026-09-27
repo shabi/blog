@@ -231,19 +231,40 @@ export async function GET(
     return NextResponse.json([]);
   }
 
+  function getMdxFiles(dir: string): string[] {
+    const files: string[] = [];
+
+    for (const entry of fs.readdirSync(dir, {
+      withFileTypes: true,
+    })) {
+      const fullPath =
+        path.join(dir, entry.name);
+
+      if (entry.isDirectory()) {
+        files.push(...getMdxFiles(fullPath));
+      }
+
+      if (
+        entry.isFile() &&
+        entry.name.endsWith(".mdx")
+      ) {
+        files.push(fullPath);
+      }
+    }
+
+    return files;
+  }
+
+
   const files =
-    fs
-      .readdirSync(postsDir)
-      .filter((file) =>
-        file.endsWith(".mdx")
-      );
+    getMdxFiles(postsDir);
 
   const results: SearchResult[] = [];
 
   for (const file of files) {
     const raw =
       fs.readFileSync(
-        path.join(postsDir, file),
+        file,
         "utf8",
       );
 
@@ -268,10 +289,10 @@ export async function GET(
     }
 
     results.push({
-      id: file.replace(
-        /\.mdx$/,
-        "",
-      ),
+      id: path
+        .relative(postsDir, file)
+        .replace(/\.mdx$/, "")
+        .replaceAll("\\", "/"),
       title,
       snippets,
     });

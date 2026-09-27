@@ -69,6 +69,7 @@ export function Header({
           items-center
           justify-center
           text-2xl
+          leading-snug
           font-medium
           uppercase
           dark:text-gray-100
@@ -88,65 +89,21 @@ export function Header({
           justify-center
           gap-2
           font-mono
-          text-xs
+          text-sm
           text-neutral-500
           dark:text-neutral-500
         "
       >
 
-        <Link
-          href={`/category/${post.category}?lang=${post.lang}`}
+        <span
           className="
-            relative
-            inline-block
             rounded-xl
             px-1.5
             py-0.5
-            text-sm
-            font-normal
-            tracking-[0.12em]
-            font-sans
-            text-neutral-500
-            dark:text-neutral-400
-            transition-colors
-
-            after:absolute
-            after:left-1.5
-            after:right-1.5
-            after:bottom-[2px]
-            after:h-px
-            after:bg-current
-            after:content-['']
-
-            hover:after:opacity-0
-            hover:bg-neutral-200
-            dark:hover:bg-neutral-700
           "
         >
-          {categoryContent}
-        </Link>
-
-
-        <span className="text-neutral-400">
-          |
+          By GANG
         </span>
-
-
-        <a
-          href="mailto:admin@ohhoba.com"
-          className="
-            rounded-xl
-            px-1.5
-            py-0.5
-            transition-colors
-            hover:bg-neutral-200
-            dark:hover:bg-neutral-700
-            hover:text-neutral-800
-            dark:hover:text-neutral-300
-          "
-        >
-          @GANG
-        </a>
 
 
         <span className="text-neutral-400">
@@ -187,6 +144,28 @@ export function Header({
         </span>
 
 
+        <Link
+          href={`/${post.lang}/${post.category}`}
+          className="
+            rounded-xl
+            px-1.5
+            py-0.5
+            transition-colors
+            hover:bg-neutral-200
+            dark:hover:bg-neutral-700
+            hover:text-neutral-800
+            dark:hover:text-neutral-300
+          "
+        >
+          {categoryContent}
+        </Link>
+
+
+        <span className="text-neutral-400">
+          |
+        </span>
+
+
         <span
           className="
             rounded-xl
@@ -207,8 +186,9 @@ export function Header({
         className="
           flex
           md:hidden
-          justify-center
           items-center
+          justify-center
+          gap-2
           whitespace-nowrap
           font-mono
           text-sm
@@ -217,47 +197,57 @@ export function Header({
         "
       >
 
-        <Link
-          href={`/category/${post.category}?lang=${post.lang}`}
+        <span
           className="
-            relative
-            rounded-none
-            px-1
+            rounded-xl
+            px-1.5
             py-0.5
-            text-sm
-            font-normal
-            tracking-[0.12em]
-            font-sans
-            text-neutral-500
-            dark:text-neutral-400
+          "
+        >
+          By GANG
+        </span>
+
+
+        <span className="text-neutral-400">
+          |
+        </span>
+
+
+        <span
+          className="
+            rounded-xl
+            px-1.5
+            py-0.5
+          "
+        >
+          {
+          showUpdated
+            ? `updated ${updatedDate}`
+            : publishedDate
+        }
+        </span>
+
+
+        <span className="text-neutral-400">
+          |
+        </span>
+
+
+        <Link
+          href={`/${post.lang}/${post.category}`}
+          className="
+            rounded-xl
+            px-1.5
+            py-0.5
             transition-colors
-
-            after:absolute
-            after:left-0
-            after:right-0
-            after:bottom-0
-            after:h-px
-            after:bg-current
-            after:content-['']
-
+            hover:bg-neutral-200
+            dark:hover:bg-neutral-700
+            hover:text-neutral-800
+            dark:hover:text-neutral-300
           "
         >
           {categoryContent}
         </Link>
-
-
-        {" · updated "}
-
-
-        {updatedDate ?? publishedDate}
-
-
-        {" · Views "}
-
-
-        <ViewCounter
-          id={post.id}
-        />
 
       </div>
 

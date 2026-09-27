@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getPosts } from "@/app/get-posts";
 
 
@@ -22,23 +23,54 @@ const categoryNames = {
 };
 
 
-export default async function Page({
+export async function generateMetadata({
   params,
-  searchParams,
 }: {
   params: Promise<{
+    lang: string;
     category: string;
   }>;
+}): Promise<Metadata> {
 
-  searchParams: Promise<{
-    lang?: string;
+  const { lang, category } = await params;
+
+  const categoryName =
+    categoryNames[
+      category as keyof typeof categoryNames
+    ]?.[
+      lang === "zh" ? "zh" : "en"
+    ] ?? category;
+
+  return {
+    title: `${categoryName} | GANG's BLOG`,
+    description: `GANG's BLOG — ${categoryName}`,
+    alternates: {
+      canonical: `/${lang}/${category}`,
+    },
+    openGraph: {
+      title: `${categoryName} | GANG's BLOG`,
+      description: `GANG's BLOG — ${categoryName}`,
+      url: `/${lang}/${category}`,
+      type: "website",
+    },
+  };
+}
+
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{
+    lang: string;
+    category: string;
   }>;
 }) {
 
 
-  const { category } = await params;
-
-  const { lang } = await searchParams;
+  const {
+    lang,
+    category,
+  } = await params;
 
 
   const posts = await getPosts();
@@ -49,9 +81,13 @@ export default async function Page({
     .filter(
       post =>
         post.category === category &&
-        (!lang || post.lang === lang)
+        post.lang === lang
     )
-    .reverse();
+    .sort(
+      (a, b) =>
+        new Date(b.date).getTime() -
+        new Date(a.date).getTime()
+    );
 
 
   const title =
@@ -116,7 +152,7 @@ export default async function Page({
             >
 
               <Link
-                href={`/${post.id}?from=category`}
+                href={`/${post.lang}/${post.category}/${post.id}?from=category`}
                 className="
                   flex
                   w-full

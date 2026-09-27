@@ -16,7 +16,9 @@ export function Footer() {
 
   const isChinese = pathname.startsWith("/zh");
   const isHome =
-    pathname === "/" || pathname === "/zh";
+    pathname === "/" ||
+    pathname === "/zh" ||
+    pathname.startsWith("/page");
 
   useEffect(() => {
     if (!isHome) return;
@@ -96,21 +98,23 @@ export function Footer() {
         )}
 
         <div>
-          <span className="md:hidden">
-            <A
-              target="_blank"
-              href="https://ohhoba.com"
-              className="!border-b-0"
-            >
-              <span className="inline-flex items-center gap-1">
-                OhHoBa
-                <ExternalLink
-                  size={14}
-                  strokeWidth={2}
-                />
-              </span>
-            </A>
-          </span>
+          {isHome && (
+            <span className="md:hidden">
+              <A
+                target="_blank"
+                href="https://ohhoba.com"
+                className="!border-b-0"
+              >
+                <span className="inline-flex items-center gap-1">
+                  OhHoBa
+                  <ExternalLink
+                    size={14}
+                    strokeWidth={2}
+                  />
+                </span>
+              </A>
+            </span>
+          )}
 
           <span className="hidden md:inline">
             <A

@@ -24,8 +24,10 @@ const categoryNames = {
 
 export function Posts({
   posts,
+  latestPostId,
 }: {
   posts: Post[];
+  latestPostId?: string | null;
 }) {
 
   return (
@@ -37,7 +39,10 @@ export function Posts({
       "
     >
 
-      <List posts={posts} />
+      <List
+        posts={posts}
+        latestPostId={latestPostId}
+      />
 
     </main>
 
@@ -48,8 +53,10 @@ export function Posts({
 
 function List({
   posts,
+  latestPostId,
 }: {
   posts: Post[];
+  latestPostId?: string | null;
 }) {
 
   return (
@@ -97,6 +104,7 @@ function List({
               className="
                 flex
                 py-4
+                md:py-5
               "
             >
 
@@ -117,14 +125,18 @@ function List({
                     grow
                     w-full
                     items-end
-                    text-2xl
+                    ${
+                      post.id === latestPostId
+                        ? "text-3xl md:text-4xl"
+                        : "text-xl md:text-2xl"
+                    }
                     leading-snug
                     font-medium
                     dark:text-gray-100
                   `}
                 >
                   <Link
-                    href={`/${post.id}?from=home`}
+                    href={`/${post.lang}/${post.category}/${post.id}?from=home`}
                     className="
                       flex
                       w-full
@@ -138,7 +150,7 @@ function List({
                         items-baseline
                         gap-3
                         origin-center
-                        ${post.id === posts[0]?.id
+                        ${post.id === latestPostId
                           ? "animate-[latestHint_3s_ease-in-out_1.5s_1]"
                           : ""}
                       `}
@@ -163,7 +175,7 @@ function List({
                         {post.title}
                       </span>
 
-                      {post.id === posts[0]?.id && (
+                      {post.id === latestPostId && (
                         <span
                           className="
                             shrink-0
