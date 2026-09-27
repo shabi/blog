@@ -306,59 +306,6 @@ export default async function Page({
 
       {content}
 
-      {false && post.history?.length > 0 && (
-        <section
-          className="
-            mx-auto
-            mt-16
-            mb-10
-            max-w-[800px]
-            border-t
-            border-neutral-200
-            pt-6
-            text-sm
-            text-neutral-500
-            dark:border-neutral-800
-            dark:text-neutral-400
-          "
-        >
-          <h2
-            className="
-              mb-4
-              text-xs
-              uppercase
-              tracking-[0.12em]
-            "
-          >
-            History
-          </h2>
-
-          <div className="space-y-3">
-            {post.history.map((item) => (
-              <div
-                key={item.hash}
-                className="
-                  flex
-                  flex-col
-                  gap-1
-                  font-mono
-                "
-              >
-                <time>
-                  {new Date(item.date)
-                    .toISOString()
-                    .slice(0, 10)}
-                </time>
-
-                <span>
-                  {item.message}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
       <PostNavigation
         id={post.id}
         from={from ?? "home"}
