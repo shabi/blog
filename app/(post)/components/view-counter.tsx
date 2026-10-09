@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,33 +11,57 @@ export function ViewCounter({
 }) {
 
   const [views, setViews] =
-    useState(0);
+    useState<number | null>(null);
 
 
   useEffect(() => {
 
+    const key =
+      `viewed:${id}`;
 
-  fetch(`/api/view?id=${id}&incr=1`)
-    .then(res => res.json())
-    .then(data => {
 
-      setViews(
-        Number(data.views ?? 0)
-      );
+    const viewed =
+      sessionStorage.getItem(key);
 
-    })
-    .catch(() => {
 
-      setViews(0);
+    const url =
+      viewed
+        ? `/api/view?id=${id}`
+        : `/api/view?id=${id}&incr=1`;
 
-    });
 
-}, [id]);
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+
+        setViews(
+          Number(data.views ?? 0)
+        );
+
+
+        if (!viewed) {
+
+          sessionStorage.setItem(
+            key,
+            "1"
+          );
+
+        }
+
+      })
+      .catch(() => {
+
+        setViews(null);
+
+      });
+
+
+  }, [id]);
 
 
   return (
     <span>
-      {views}
+      {views ?? "..."}
     </span>
   );
 

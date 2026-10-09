@@ -7,9 +7,17 @@ export type Post = {
 
   id: string;
 
+  filePath: string;
+
   date: string;
 
   updatedAt: string;
+
+  history: {
+    hash: string;
+    date: string;
+    message: string;
+  }[];
 
   title: string;
 
@@ -87,6 +95,8 @@ export const getPosts = async (
 
         id: post.id,
 
+        filePath: post.filePath,
+
         date: post.date,
 
         title: post.title,
@@ -106,6 +116,12 @@ export const getPosts = async (
           "updatedAt" in post && post.updatedAt
             ? post.updatedAt
             : post.date,
+
+
+        history:
+          "history" in post && Array.isArray(post.history)
+            ? post.history
+            : [],
 
 
         views,
