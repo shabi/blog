@@ -1,117 +1,690 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Logo } from "./logo";
 import Link from "next/link";
-import { Mail, ExternalLink } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  Mail,
+  UserRoundPen,
+  Search,
+  Rss,
+  X,
+  Menu,
+} from "lucide-react";
 
+const categories = [
+  { label: "ESSAY", href: "/en/essay", chinese: false },
+  { label: "STORY", href: "/en/story", chinese: false },
+  { label: "TECH", href: "/en/tech", chinese: false },
+  { label: "随笔", href: "/zh/essay", chinese: true },
+  { label: "故事", href: "/zh/story", chinese: true },
+  { label: "技术", href: "/zh/tech", chinese: true },
+];
+
+type SearchResult = {
+  id: string;
+  title: string;
+  snippets: string[];
+};
+
+function hasValidSearchQuery(value: string) {
+  const query = value.trim();
+
+  const chineseCount =
+    (query.match(/[\u4e00-\u9fff]/g) ?? []).length;
+
+  const englishCount =
+    (query.match(/[A-Za-z]/g) ?? []).length;
+
+  return chineseCount >= 1 || englishCount >= 2;
+}
+
+function Highlight({
+  text,
+  query,
+}: {
+  text: string;
+  query: string;
+}) {
+  if (!query.trim()) {
+    return <>{text}</>;
+  }
+
+  const escapedQuery = query.trim().replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+
+  const parts = text.split(
+    new RegExp(`(${escapedQuery})`, "gi")
+  );
+
+
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.toLowerCase() === query.trim().toLowerCase() ? (
+          <mark
+            key={index}
+            className="
+              rounded
+              bg-neutral-200
+              px-0.5
+              text-neutral-900
+              dark:bg-neutral-700
+              dark:text-neutral-100
+            "
+          >
+            {part}
+          </mark>
+        ) : (
+          <span key={index}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
 
 export function Header() {
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [searched, setSearched] = useState(false);
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const searchAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+
+    inputRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeSearch();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    const handleMouseDown = (event: MouseEvent) => {
+      if (event.button !== 0) return;
+
+      const target = event.target;
+
+      if (
+        target instanceof Node &&
+        !searchAreaRef.current?.contains(target)
+      ) {
+        closeSearch();
+      }
+    };
+
+    document.addEventListener("mousedown", handleMouseDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleMouseDown);
+    };
+  }, [searchOpen]);
+
+  async function runSearch() {
+    const value = query.trim();
+
+    if (!hasValidSearchQuery(value)) {
+      setResults([]);
+      setSearched(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/search?q=${encodeURIComponent(value)}`
+      );
+
+      if (!response.ok) {
+        setResults([]);
+        setSearched(true);
+        return;
+      }
+
+      const data = await response.json();
+
+      const searchResults = Array.isArray(data) ? data : [];
+
+      if (searchResults.length > 0) {
+        router.push(
+          `/search?q=${encodeURIComponent(value)}`
+        );
+        return;
+      }
+
+      setResults([]);
+      setSearched(true);
+    } catch {
+      setResults([]);
+      setSearched(true);
+    }
+  }
+
+  function handleSearchKeyDown(
+    event: React.KeyboardEvent<HTMLInputElement>
+  ) {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    runSearch();
+  }
+
+  function openSearch() {
+    setSearchOpen(true);
+    setCategoriesOpen(false);
+  }
+
+  function closeSearch() {
+    setSearchOpen(false);
+    setQuery("");
+    setResults([]);
+    setSearched(false);
+  }
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let frame = 0;
+
+    const handleScroll = () => {
+      if (frame) return;
+
+      frame = window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+
+        if (categoriesOpen || searchOpen || currentScrollY <= 24) {
+          setHeaderVisible(true);
+          lastScrollY = currentScrollY;
+        } else {
+          const delta = currentScrollY - lastScrollY;
+
+          if (delta > 8) {
+            setHeaderVisible(false);
+            lastScrollY = currentScrollY;
+          } else if (delta < -8) {
+            setHeaderVisible(true);
+            lastScrollY = currentScrollY;
+          }
+        }
+
+        frame = 0;
+      });
+    };
+
+    const handleResize = () => {
+      setHeaderVisible(true);
+      lastScrollY = window.scrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [categoriesOpen, searchOpen]);
 
   return (
     <header
-      className="
+      className={`
+        ${headerVisible ? "translate-y-0" : "-translate-y-full"}
         sticky
         top-0
         z-50
-        flex
-        items-center
-        py-4
         -mx-6
         px-6
         bg-[#fcfcfc]/80
         dark:bg-[#1C1C1C]/80
-        backdrop-blur
-      "
+        md:backdrop-blur
+        overflow-x-clip
+        transition-transform
+        duration-300
+        ease-out
+      `}
     >
+      <div className="relative flex items-center py-4">
+        <Logo
+          categoriesOpen={categoriesOpen}
+          onToggleCategories={() => {
+            setCategoriesOpen((value) => !value);
+            setSearchOpen(false);
+          }}
+        />
 
-      <Logo />
-
-
-      <nav
-  className="
-    text-xs
-    md:text-sm
-    grow
-    justify-end
-    items-center
-    flex
-  "
->
-
-
-        <Link
-          href="/about"
-          className="group p-2"
-        >
-          <span className="group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700 rounded-xl py-0.5 px-1.5 inline-flex">
-            About
-          </span>
-        </Link>
-
-
-        <a
-          href="mailto:admin@ohhoba.com"
+        <nav
           className="
-            group
-            inline-flex
+            relative
+            grow
+            flex
             items-center
-            p-2
-            rounded-sm
-            transition-[background-color]
-            whitespace-nowrap
+            justify-end
+            md:justify-end
+            pl-0
+            text-sm
+            md:pl-0
+            md:text-base
           "
         >
-
-          <span className="group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700 rounded-xl py-0.5 px-1.5 inline-flex items-center gap-1">
-
-            <span>
-              Contact me
+          <Link
+            href="/about"
+            className={`group relative p-1.5 md:p-2 ${
+              searchOpen ? "invisible" : ""
+            }`}
+          >
+            <span className="inline-flex items-center rounded-xl px-1.5 py-0.5 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700">
+              <span className="hidden md:inline">ABOUT</span>
+              <UserRoundPen
+                size={18}
+                strokeWidth={2}
+                className="md:ml-1 inline-block"
+              />
             </span>
 
-            <Mail
-              size={14}
-              strokeWidth={2}
-            />
+            <span
+              className="
+                pointer-events-none
+                absolute
+                left-1/2
+                top-full
+                z-50
+                mt-2
+                -translate-x-1/2
+                whitespace-nowrap
+                rounded-lg
+                border
+                border-neutral-200
+                bg-neutral-100/95
+                px-2.5
+                py-1
+                text-sm
+                text-neutral-700
+                opacity-0
+                shadow-sm
+                transition-all
+                duration-150
+                group-hover:translate-y-0
+                group-hover:opacity-100
+                translate-y-1
+                dark:border-neutral-700
+                dark:bg-neutral-800/95
+                dark:text-neutral-200
+              "
+            >
+              About GANG
+            </span>
+          </Link>
 
-          </span>
+          <a
+            href="mailto:admin@ohhoba.com"
+            className={`group relative inline-flex items-center whitespace-nowrap p-1.5 md:p-2 ${
+              searchOpen ? "invisible" : ""
+            }`}
+          >
+            <span className="inline-flex items-center gap-0 md:gap-1 rounded-xl px-1.5 py-0.5 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700">
+              <span className="hidden md:inline">CONTACT</span>
+              <Mail
+                size={18}
+                strokeWidth={2}
+                className="inline-block"
+              />
+            </span>
 
-        </a>
+            <span
+              className="
+                pointer-events-none
+                absolute
+                left-1/2
+                top-full
+                z-50
+                mt-2
+                -translate-x-1/2
+                whitespace-nowrap
+                rounded-lg
+                border
+                border-neutral-200
+                bg-neutral-100/95
+                px-2.5
+                py-1
+                text-sm
+                text-neutral-700
+                opacity-0
+                shadow-sm
+                transition-all
+                duration-150
+                translate-y-1
+                group-hover:translate-y-0
+                group-hover:opacity-100
+                dark:border-neutral-700
+                dark:bg-neutral-800/95
+                dark:text-neutral-200
+              "
+            >
+              admin@ohhoba.com
+            </span>
+          </a>
 
+          <a
+            href="/feed.xml"
+            aria-label="RSS Feed"
+            className={`group relative hidden items-center whitespace-nowrap p-1 md:inline-flex md:p-2 ${
+              searchOpen ? "invisible" : ""
+            }`}
+          >
+            <span className="inline-flex items-center gap-1 rounded-xl px-1.5 py-0.5 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700">
+              <span>RSS</span>
+              <Rss size={18} strokeWidth={2} />
+            </span>
 
-        <a
-          href="https://ohhoba.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="
-            group
-            inline-flex
-            items-center
-            p-2
-            rounded-sm
-            transition-[background-color]
-            whitespace-nowrap
-            -mr-2
-          "
+            <span className="
+              pointer-events-none absolute left-1/2 top-full z-50 mt-2
+              -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-lg
+              border border-neutral-200 bg-neutral-100/95 px-2.5 py-1
+              text-sm text-neutral-700 opacity-0 shadow-sm transition-all
+              duration-150 group-hover:translate-y-0 group-hover:opacity-100
+              dark:border-neutral-700 dark:bg-neutral-800/95 dark:text-neutral-200
+            ">RSS Feed</span>
+          </a>
+
+          <a
+            href="/feed.xml"
+            aria-label="RSS Feed"
+            className={`group relative inline-flex items-center whitespace-nowrap p-1.5 md:hidden ${
+              searchOpen ? "invisible" : ""
+            }`}
+          >
+            <span className="inline-flex items-center rounded-xl px-1.5 py-0.5 group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700">
+              <Rss size={18} strokeWidth={2} />
+            </span>
+
+            <span className="
+              pointer-events-none absolute left-1/2 top-full z-50 mt-2
+              -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-lg
+              border border-neutral-200 bg-neutral-100/95 px-2.5 py-1
+              text-sm text-neutral-700 opacity-0 shadow-sm transition-all
+              duration-150 group-hover:translate-y-0 group-hover:opacity-100
+              dark:border-neutral-700 dark:bg-neutral-800/95 dark:text-neutral-200
+            ">RSS Feed</span>
+          </a>
+
+          <button
+            type="button"
+            aria-label={searchOpen ? "Close search" : "Search"}
+            onClick={searchOpen ? closeSearch : openSearch}
+            className="
+              relative
+              z-30
+              ml-0
+              md:ml-1
+              inline-flex
+              h-8
+              w-8
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              transition-colors
+              hover:bg-neutral-200
+              dark:hover:bg-neutral-700
+            "
+          >
+            {searchOpen ? (
+              <X size={16} strokeWidth={2} />
+            ) : (
+              <Search size={16} strokeWidth={2} />
+            )}
+          </button>
+
+          <button
+            type="button"
+            aria-label={categoriesOpen ? "Hide categories" : "Show categories"}
+            aria-expanded={categoriesOpen}
+            onClick={() => {
+              setCategoriesOpen((value) => !value);
+              setSearchOpen(false);
+            }}
+            className="
+              ml-1
+              inline-flex
+              h-8
+              w-8
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+
+              transition-colors
+              hover:bg-neutral-200
+
+              dark:hover:bg-neutral-700
+              md:hidden
+            "
+          >
+            <Menu size={20} strokeWidth={2} />
+          </button>
+
+          <div
+            ref={searchAreaRef}
+            className={`
+              absolute
+              right-12
+              top-1/2
+              z-20
+              block
+              md:block
+              -translate-y-1/2
+              transition-all
+              duration-300
+              ease-out
+              ${
+                searchOpen
+                  ? "w-[220px] md:w-[150px] md:w-[min(420px,calc(100vw-120px))] opacity-100"
+                  : "pointer-events-none w-0 opacity-0"
+              }
+            `}
+          >
+            <div
+              className="
+                flex
+                h-8
+                items-center
+                overflow-hidden
+                rounded-xl
+                bg-[#fcfcfc]/95
+                dark:bg-[#1C1C1C]/95
+                md:backdrop-blur
+              "
+            >
+              <Search
+                size={16}
+                strokeWidth={2}
+                className="ml-2 shrink-0 text-neutral-400"
+              />
+
+              <input
+                ref={inputRef}
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setSearched(false);
+                  setResults([]);
+                }}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="Search"
+                className="
+                  h-full
+                  min-w-0
+                  flex-1
+                  bg-transparent
+                  px-2
+                  text-sm
+                  outline-none
+                  placeholder:text-neutral-400
+                "
+              />
+            </div>
+
+            {searched && (
+              <div
+                className="
+                  fixed
+                  left-0
+                  right-0
+                  top-[3.2rem]
+                  mx-auto
+                  w-full
+                  max-w-[800px]
+                  rounded-xl
+                  bg-[#fcfcfc]/95
+                  py-1
+                  shadow-sm
+                  dark:bg-[#1C1C1C]/95
+                  md:backdrop-blur
+                "
+              >
+                {!hasValidSearchQuery(query) ? (
+                  <div className="px-3 py-3 text-base text-neutral-500 dark:text-neutral-400">
+                    At least 2 characters
+                  </div>
+                ) : results.length > 0 ? (
+                  results.map((result) => (
+                    <Link
+                      key={result.id}
+                      href={`/${result.id}?from=search`}
+                      onClick={closeSearch}
+                      className="
+                        block
+                        px-3
+                        py-3
+                        transition-colors
+                        hover:bg-neutral-200
+                        dark:hover:bg-neutral-700
+                      "
+                    >
+                      <div className="text-sm font-medium">
+                        <Highlight
+                          text={result.title}
+                          query={query}
+                        />
+                      </div>
+
+                      {result.snippets.length > 0 && (
+                        <div className="mt-2 space-y-2 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
+                          {result.snippets.map(
+                            (snippet, index) => (
+                              <p key={index}>
+                                <Highlight
+                                  text={snippet}
+                                  query={query}
+                                />
+                              </p>
+                            )
+                          )}
+                        </div>
+                      )}
+                    </Link>
+                  ))
+                ) : (
+                  <div className="px-3 py-3 text-base text-neutral-500 dark:text-neutral-400">
+                    No results
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </nav>
+      </div>
+
+      <div
+        className={`
+          relative
+          z-0
+          overflow-hidden
+          transition-all
+          duration-300
+          ease-out
+
+          ${
+            categoriesOpen
+              ? "max-h-28 pb-3 opacity-100 translate-y-0"
+              : "max-h-0 pb-0 opacity-0 -translate-y-2 pointer-events-none"
+          }
+        `}
+      >
+        <nav
+          className={`
+            mx-auto
+            grid
+            w-full
+            max-w-[360px]
+            grid-cols-3
+            place-items-center
+            gap-y-3
+            text-center
+            text-xs
+            tracking-[0.12em]
+            text-neutral-500
+            dark:text-neutral-400
+            md:flex
+            md:w-auto
+            md:max-w-xl
+            md:justify-center
+            md:gap-6
+            md:text-sm
+          `}
+          aria-label="Categories"
         >
-
-          <span className="group-hover:bg-neutral-200 dark:group-hover:bg-neutral-700 rounded-xl py-0.5 px-1.5 inline-flex items-center gap-1">
-
-            <span>
-              OhHoBa
-            </span>
-
-            <ExternalLink
-              size={14}
-              strokeWidth={2}
-            />
-
-          </span>
-
-        </a>
-
-
-      </nav>
-
+          {categories.map((category) => (
+            <Link
+              key={category.href}
+              href={category.href}
+              onClick={() => setCategoriesOpen(false)}
+              className="
+                relative
+                inline-flex
+                w-[59px]
+                justify-center
+                rounded-xl
+                px-2
+                py-1
+                text-sm
+                font-normal
+                tracking-[0.12em]
+                text-neutral-500
+                dark:text-neutral-400
+                bg-neutral-100
+                dark:bg-neutral-800
+                transition-colors
+                md:bg-transparent
+                md:dark:bg-transparent
+                hover:bg-neutral-200
+                dark:hover:bg-neutral-700
+              "
+            >
+              {category.chinese ? (
+                <span className="inline-flex gap-[0.5em]">
+                  <span>{category.label[0]}</span>
+                  <span>{category.label[1]}</span>
+                </span>
+              ) : (
+                category.label
+              )}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }

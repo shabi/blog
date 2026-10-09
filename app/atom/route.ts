@@ -21,9 +21,9 @@ export async function GET() {
       if (!dateMatch) return "";
       return `${acc}
         <entry>
-          <id>${post.id}</id>
+          <id>https://blog.ohhoba.com/${post.lang}/${post.category}/${post.id}</id>
           <title>${post.title}</title>
-          <link href="https://blog.ohhoba.com/${dateMatch[0]}/${post.id}"/>
+          <link href="https://blog.ohhoba.com/${post.lang}/${post.category}/${post.id}"/>
           <updated>${post.updatedAt}</updated>
         </entry>`;
     }, "")}

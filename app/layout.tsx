@@ -87,7 +87,7 @@ export default function RootLayout({
       suppressHydrationWarning={true}
     >
 
-      <body className="dark:text-gray-100 max-w-3xl m-auto">
+      <body className="dark:text-gray-100 max-w-[800px] min-h-dvh pb-20 m-auto">
 
 
         <script

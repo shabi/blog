@@ -22,8 +22,8 @@ const geistSansMedium = readFileSync(
 
 const categoryNames = {
   tech: "Tech",
-  essays: "Essays",
-  stories: "Stories",
+  essay: "Essays",
+  story: "Stories",
 };
 
 
